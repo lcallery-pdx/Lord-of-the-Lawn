@@ -1,4 +1,6 @@
 mod lawn;
 fn main() {
-    println!("Hello, world!");
+    println!("Welcome to Lord of the Lawn!");
+
+    // ToDo - Start Game
 }
