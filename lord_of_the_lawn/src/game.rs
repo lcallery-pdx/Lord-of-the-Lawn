@@ -31,4 +31,12 @@ impl Game {
             self.current_lawn = Lawn::new(self.price_per_sqft);
         }
     }
+
+     fn upgrade_mower(&mut self) {
+        self.mower_efficiency += 1;
+        println!(
+            "\nMower upgraded! Now mowing {} sqft per click.",
+            self.mower_efficiency
+        );
+    }
 }
