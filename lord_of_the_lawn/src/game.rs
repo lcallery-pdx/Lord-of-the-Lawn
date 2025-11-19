@@ -6,3 +6,29 @@ pub struct Game {
     price_per_sqft: f64,
     mower_efficiency: u32
 }
+
+impl Game {
+    pub fn new() -> Self{
+        Game {
+            current_lawn: Lawn::new(0.25),
+            total_money: 0.0,
+            payout_per_sqft: 0.25,
+            mower_efficiency: 1
+        }
+    }
+
+    fn mow_one_sqft(&mut self) {
+        self.current_lawn.mow(self.mower_efficiency);
+
+        if self.current_lawn.is_complete() {
+            let payout = self.current_lawn.size as f64 * self.price_per_sqft;
+            self.total_money += payout;
+            println!(
+                "\nLawn complete! You earned ${:.2} for {} sqft.",
+                payout, self.current_lawn.size
+            );
+
+            self.current_lawn = Lawn::new(self.price_per_sqft);
+        }
+    }
+}
