@@ -1,4 +1,6 @@
 use crate:: lawn::Lawn;
+use std::io::stdout;
+use std::io::Write;
 
 pub struct Game {
     current_lawn: Lawn,
@@ -12,10 +14,11 @@ impl Game {
         Game {
             current_lawn: Lawn::new(0.25),
             total_money: 0.0,
-            payout_per_sqft: 0.25,
+            price_per_sqft: 0.25,
             mower_efficiency: 1
         }
     }
+
 
     fn mow_one_sqft(&mut self) {
         self.current_lawn.mow(self.mower_efficiency);
@@ -30,6 +33,18 @@ impl Game {
 
             self.current_lawn = Lawn::new(self.price_per_sqft);
         }
+    }
+
+    fn display_status(&self) {
+        print!(
+            "\rCurrent Lawn: {}/{} sqft | Money: ${:.2} | Rate: ${:.2}/sqft | Mower: {} sqft/click   ",
+            self.current_lawn.mowed,
+            self.current_lawn.size,
+            self.total_money,
+            self.price_per_sqft,
+            self.mower_efficiency
+        );
+        stdout().flush().unwrap();
     }
 
      fn upgrade_mower(&mut self) {
