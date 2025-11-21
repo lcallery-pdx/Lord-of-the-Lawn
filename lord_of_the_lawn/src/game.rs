@@ -2,6 +2,7 @@ use crate:: lawn::Lawn;
 use std::io::stdout;
 use std::io::Write;
 
+
 pub struct Game {
     current_lawn: Lawn,
     total_money: f64,
