@@ -9,4 +9,5 @@ fn main() {
     // ToDo - Start Game
 
     let mut game = Game::new();
+    game.run();
 }

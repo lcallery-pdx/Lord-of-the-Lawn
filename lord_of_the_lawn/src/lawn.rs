@@ -4,12 +4,12 @@ use rand::Rng;
 pub struct Lawn {
     pub size: u32,
     pub mowed: u32,
-    //pub payout_per_sqft: f64,
+    pub payout_per_sqft: f64,
 }
 
 // Lawn Implementations
 impl Lawn {
-    pub fn new(_price_per_sqft: f64) -> Self {
+    pub fn new(price_per_sqft: f64) -> Self {
         //Generate Random Lawn Size
         let mut rng = rand::rng();
         let size = rng.random_range(25..250);
@@ -18,7 +18,7 @@ impl Lawn {
         Lawn {
             size,
             mowed: 0,
-            //payout_per_sqft: price_per_sqft,
+            payout_per_sqft : price_per_sqft,
         }
     }
 

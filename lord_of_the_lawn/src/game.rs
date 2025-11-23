@@ -1,7 +1,8 @@
 use crate:: lawn::Lawn;
 use std::io::stdout;
 use std::io::Write;
-
+use crossterm::event::{self, Event, KeyCode};
+use std::time::Duration;
 
 pub struct Game {
     current_lawn: Lawn,
@@ -20,12 +21,33 @@ impl Game {
         }
     }
 
+    pub fn run(&mut self) {
+        loop {
+            self.display_status();
+
+            // Wait for user input (non-blocking timeout)
+            if event::poll(Duration::from_millis(500)).unwrap() {
+                if let Event::Key(key_event) = event::read().unwrap() {
+                    match key_event.code {
+                        KeyCode::Enter => self.mow_one_sqft(),
+                        KeyCode::Char('u') | KeyCode::Char('U') => self.upgrade_mower(),
+                        KeyCode::Char('q') | KeyCode::Char('Q') => {
+                            println!("\nGoodbye! You earned ${:.2}.", self.total_money);
+                            break;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
 
     fn mow_one_sqft(&mut self) {
         self.current_lawn.mow(self.mower_efficiency);
 
         if self.current_lawn.is_complete() {
-            let payout = self.current_lawn.size as f64 * self.price_per_sqft;
+            let payout = self.current_lawn.size as f64 * self.current_lawn.payout_per_sqft;
             self.total_money += payout;
             println!(
                 "\nLawn complete! You earned ${:.2} for {} sqft.",
@@ -54,5 +76,38 @@ impl Game {
             "\nMower upgraded! Now mowing {} sqft per click.",
             self.mower_efficiency
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*; // brings Game and Lawn into scope
+
+    #[test]
+    fn upgrade_mower_increases_efficiency() {
+        let mut game = Game::new();
+
+        let old_eff = game.mower_efficiency;
+        game.upgrade_mower();
+
+        assert_eq!(game.mower_efficiency, old_eff + 1);
+    }
+
+    #[test]
+    fn mow_one_sqft_increases_mowed_by_efficiency() {
+        let mut game = Game::new();
+
+        // Set up a predictable lawn
+        game.current_lawn = Lawn {
+            size: 100,
+            mowed: 0,
+            payout_per_sqft: game.price_per_sqft,
+        };
+
+        game.mower_efficiency = 5;
+
+        game.mow_one_sqft();
+
+        assert_eq!(game.current_lawn.mowed, 5);
     }
 }
