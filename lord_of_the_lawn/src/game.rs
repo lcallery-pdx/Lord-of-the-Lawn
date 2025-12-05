@@ -1,9 +1,18 @@
+//! Game loop and high-level progression logic for Lord of the Lawn.
+//!
+//! This module owns the overall game state, including the current [`Lawn`],
+//! upgrade costs, and user input handling.
+
 use crate:: lawn::Lawn;
 use std::io::stdout;
 use std::io::Write;
 use crossterm::event::{self, Event, KeyCode};
 use std::time::{Duration,Instant};
 
+/// Top–level game state and logic for Lord of the Lawn.
+///
+/// A `Game` owns the currently active [`Lawn`], the player's money,
+/// and all upgrade costs and mowing rates.
 pub struct Game {
     current_lawn: Lawn,
     total_money: f64,
@@ -14,6 +23,7 @@ pub struct Game {
     pub auto_mower_upgrade_cost: f64,
 }
 
+/// Creates a new [`Game`] with a fresh [`Lawn`] and default pricing.
 impl Game {
     pub fn new() -> Self{
         Game {
@@ -26,7 +36,9 @@ impl Game {
             auto_mower_upgrade_cost: 25.0,
         }
     }
-
+    /// Starts the main game loop.
+    ///
+    /// This method blocks until the player chooses to quit with `Q`.
     pub fn run(&mut self) {
         let mut last_tick = Instant::now();
 
@@ -40,8 +52,8 @@ impl Game {
             self.display_status();
 
             // Wait for user input (non-blocking timeout)
-            if event::poll(Duration::from_millis(500)).unwrap() {
-                if let Event::Key(key_event) = event::read().unwrap() {
+            if event::poll(Duration::from_millis(500)).unwrap() 
+                && let Event::Key(key_event) = event::read().unwrap() {
                     match key_event.code {
                         KeyCode::Enter => self.mow_manual(),
                         KeyCode::Char('u') | KeyCode::Char('U') => self.upgrade_mower(),
@@ -52,12 +64,14 @@ impl Game {
                         }
                         _ => {}
                     }
-                }
             }
+            
         }
     }
 
-    /// Called every frame with how many seconds have passed
+    /// Advances the simulation forward by `elapsed_secs` seconds.
+    ///
+    /// This applies progress from the auto-mower, if it is enabled.
     fn tick(&mut self, elapsed_secs: f64) {
         if self.auto_mower_rate > 0.0 && elapsed_secs > 0.0 {
             let amount = (self.auto_mower_rate * elapsed_secs).floor() as u32;
@@ -68,6 +82,8 @@ impl Game {
         }
     }
 
+    /// Checks whether the current lawn is complete and, if so, pays out
+    /// the reward and replaces it with a new randomly sized lawn.
     fn handle_completed_lawn(&mut self) {
         if self.current_lawn.is_complete() {
             let payout = self.current_lawn.size as f64 * self.current_lawn.payout_per_sqft;
@@ -81,12 +97,16 @@ impl Game {
         }
     }
 
+    /// Handles a single manual mow action based on `mower_efficiency`.
     fn mow_manual(&mut self) {
         self.current_lawn.mow(self.mower_efficiency);
         self.handle_completed_lawn();
     }
 
-
+    /// Attempts to purchase an auto-mower upgrade.
+    ///
+    /// On success this increases [`Game::auto_mower_rate`] and doubles
+    /// [`Game::auto_mower_upgrade_cost`].
     fn upgrade_auto_mower(&mut self) {
         if self.total_money >= self.auto_mower_upgrade_cost {
             let cost = self.auto_mower_upgrade_cost;
@@ -107,7 +127,7 @@ impl Game {
         }
     }
 
-
+    /// Prints the current game status line to the terminal.
     fn display_status(&self) {
         print!(
             "\rCurrent Lawn: {}/{} sqft | Money: ${:.2} | Rate: ${:.2}/sqft | Mower: {} sqft/click | Upgrade: ${:.2} (U) | Auto: {:.1} sqft/s (A: ${:.2})   ",
@@ -123,7 +143,11 @@ impl Game {
         stdout().flush().unwrap();
     }
 
-     fn upgrade_mower(&mut self) {
+    /// Attempts to purchase a manual mower upgrade.
+    ///
+    /// On success this increases `mower_efficiency` and doubles
+    /// [`Game::mower_upgrade_cost`].
+    fn upgrade_mower(&mut self) {
         if self.total_money >= self.mower_upgrade_cost {
             let cost = self.mower_upgrade_cost;
             self.total_money -= cost;
