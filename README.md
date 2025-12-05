@@ -7,8 +7,6 @@ Developed for CS523 - Rust Programming
 
 Lord of the Lawn is a Rust-based clicker-style terminal game where you run a tiny lawn mowing business. Each “click” represents mowing a certain number of square feet of grass. As you complete jobs and earn money, you can buy upgrades that increase your mowing efficiency and eventually unlock an automower that cuts grass for you over time.
 
-The project started as a simple terminal-only prototype so I could focus on core game logic, timing, and upgrades before worrying about any graphical UI.
-
 ---
 
 ## What Was Built
