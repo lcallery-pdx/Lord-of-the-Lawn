@@ -3,11 +3,11 @@
 //! This module owns the overall game state, including the current [`Lawn`],
 //! upgrade costs, and user input handling.
 
-use crate:: lawn::Lawn;
-use std::io::stdout;
-use std::io::Write;
+use crate::lawn::Lawn;
 use crossterm::event::{self, Event, KeyCode};
-use std::time::{Duration,Instant};
+use std::io::Write;
+use std::io::stdout;
+use std::time::{Duration, Instant};
 
 /// Top–level game state and logic for Lord of the Lawn.
 ///
@@ -19,13 +19,13 @@ pub struct Game {
     price_per_sqft: f64,
     mower_efficiency: u32,
     mower_upgrade_cost: f64,
-    pub auto_mower_rate: f64,       
+    pub auto_mower_rate: f64,
     pub auto_mower_upgrade_cost: f64,
 }
 
 /// Creates a new [`Game`] with a fresh [`Lawn`] and default pricing.
 impl Game {
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         Game {
             current_lawn: Lawn::new(0.25),
             total_money: 0.0,
@@ -52,20 +52,20 @@ impl Game {
             self.display_status();
 
             // Wait for user input (non-blocking timeout)
-            if event::poll(Duration::from_millis(500)).unwrap() 
-                && let Event::Key(key_event) = event::read().unwrap() {
-                    match key_event.code {
-                        KeyCode::Enter => self.mow_manual(),
-                        KeyCode::Char('u') | KeyCode::Char('U') => self.upgrade_mower(),
-                        KeyCode::Char('a') | KeyCode::Char('A') => self.upgrade_auto_mower(),
-                        KeyCode::Char('q') | KeyCode::Char('Q') => {
-                            println!("\nGoodbye! You earned ${:.2}.", self.total_money);
-                            break;
-                        }
-                        _ => {}
+            if event::poll(Duration::from_millis(500)).unwrap()
+                && let Event::Key(key_event) = event::read().unwrap()
+            {
+                match key_event.code {
+                    KeyCode::Enter => self.mow_manual(),
+                    KeyCode::Char('u') | KeyCode::Char('U') => self.upgrade_mower(),
+                    KeyCode::Char('a') | KeyCode::Char('A') => self.upgrade_auto_mower(),
+                    KeyCode::Char('q') | KeyCode::Char('Q') => {
+                        println!("\nGoodbye! You earned ${:.2}.", self.total_money);
+                        break;
                     }
+                    _ => {}
+                }
             }
-            
         }
     }
 
@@ -152,13 +152,12 @@ impl Game {
             let cost = self.mower_upgrade_cost;
             self.total_money -= cost;
             self.mower_efficiency += 1;
-            
+
             self.mower_upgrade_cost *= 2.0;
 
             println!(
                 "\n Mower upgraded! Now mowing {} sqft per click. Next upgrade costs ${:.2}.",
-                self.mower_efficiency,
-                self.mower_upgrade_cost
+                self.mower_efficiency, self.mower_upgrade_cost
             );
         } else {
             println!(
@@ -171,11 +170,11 @@ impl Game {
 
 #[cfg(test)]
 mod tests {
-    use super::*; 
+    use super::*;
 
     #[test]
     fn upgrade_mower_increases_efficiency() {
-       let mut game = Game::new();
+        let mut game = Game::new();
 
         game.total_money = 100.0;
         let old_eff = game.mower_efficiency;
@@ -187,7 +186,6 @@ mod tests {
         assert_eq!(game.mower_upgrade_cost, old_cost * 2.0);
         assert!((game.total_money - (100.0 - old_cost)).abs() < 1e-6);
     }
-
 
     #[test]
     fn mow_one_sqft_increases_mowed_by_efficiency() {
@@ -218,7 +216,7 @@ mod tests {
         };
         game.auto_mower_rate = 10.0;
 
-        game.tick(3.0); 
+        game.tick(3.0);
 
         assert_eq!(game.current_lawn.mowed, 30);
     }

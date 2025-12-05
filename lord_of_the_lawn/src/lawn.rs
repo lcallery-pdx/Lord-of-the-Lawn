@@ -30,7 +30,7 @@ impl Lawn {
         Lawn {
             size,
             mowed: 0,
-            payout_per_sqft : price_per_sqft,
+            payout_per_sqft: price_per_sqft,
         }
     }
 
@@ -49,7 +49,7 @@ impl Lawn {
             }
         }
     }
-    
+
     // Lawn Completed Fuction
     /// Returns `true` if the entire lawn has been mowed.
     pub fn is_complete(&self) -> bool {
@@ -79,7 +79,6 @@ mod tests {
             );
         }
     }
-
 
     #[test]
     fn test_mow_increases_mowed() {

@@ -2,8 +2,8 @@
 //!
 //! This binary wires up the [`Game`] type and starts the main loop.
 
-mod lawn;
 mod game;
+mod lawn;
 
 use crate::game::Game;
 
@@ -12,7 +12,9 @@ use crate::game::Game;
 /// Prints a short introduction and then hands control to [`Game::run`].
 fn main() {
     println!("Welcome to Lord of the Lawn!");
-    println!("Press [Enter] to mow, [U] to upgrade mow rate, [A] to upgrade automower, [Q] to quit.\n");
+    println!(
+        "Press [Enter] to mow, [U] to upgrade mow rate, [A] to upgrade automower, [Q] to quit.\n"
+    );
 
     // Start a new game and enter the main loop.
     let mut game = Game::new();
