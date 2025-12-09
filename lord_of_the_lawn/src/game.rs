@@ -153,7 +153,7 @@ impl Game {
             let cost = self.auto_mower_upgrade_cost;
             self.total_money -= cost;
             // each upgrade adds 1 sqft/sec
-            self.auto_mower_rate += 1.0;
+            self.auto_mower_rate += 2.0;
             self.auto_mower_upgrade_cost *= 2.0;
 
             println!(
@@ -192,7 +192,7 @@ impl Game {
         if self.total_money >= self.mower_upgrade_cost {
             let cost = self.mower_upgrade_cost;
             self.total_money -= cost;
-            self.mower_efficiency += 1;
+            self.mower_efficiency += 2;
 
             self.mower_upgrade_cost *= 2.0;
 
