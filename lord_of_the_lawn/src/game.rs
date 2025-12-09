@@ -21,6 +21,7 @@ pub struct Game {
     mower_upgrade_cost: f64,
     pub auto_mower_rate: f64,
     pub auto_mower_upgrade_cost: f64,
+    auto_mower_accum: f64,
 }
 
 /// Creates a new [`Game`] with a fresh [`Lawn`] and default pricing.
@@ -34,6 +35,7 @@ impl Game {
             mower_upgrade_cost: 10.0,
             auto_mower_rate: 0.0,
             auto_mower_upgrade_cost: 25.0,
+            auto_mower_accum: 0.0
         }
     }
     /// Starts the main game loop.
@@ -73,12 +75,22 @@ impl Game {
     ///
     /// This applies progress from the auto-mower, if it is enabled.
     fn tick(&mut self, elapsed_secs: f64) {
-        if self.auto_mower_rate > 0.0 && elapsed_secs > 0.0 {
-            let amount = (self.auto_mower_rate * elapsed_secs).floor() as u32;
-            if amount > 0 {
-                self.current_lawn.mow(amount);
-                self.handle_completed_lawn();
-            }
+        if self.auto_mower_rate <= 0.0 || elapsed_secs <= 0.0 {
+            return;
+        }
+
+        // Add the fractional progress for this tick
+        self.auto_mower_accum += self.auto_mower_rate * elapsed_secs;
+
+        // Convert whole sqft into mowing
+        let amount = self.auto_mower_accum.floor() as u32;
+
+        if amount > 0 {
+            // Keep only the leftover fraction
+            self.auto_mower_accum -= amount as f64;
+
+            self.current_lawn.mow(amount);
+            self.handle_completed_lawn();
         }
     }
 
