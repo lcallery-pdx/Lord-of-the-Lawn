@@ -44,29 +44,58 @@ impl Game {
     pub fn run(&mut self) {
         let mut last_tick = Instant::now();
 
+        // Draw initial status line once
+        self.display_status();
+
         loop {
-            // time-based update for automower
             let now = Instant::now();
             let elapsed = now.duration_since(last_tick);
             last_tick = now;
-            self.tick(elapsed.as_secs_f64());
 
-            self.display_status();
+            let mut should_redraw = false;
+
+            // Time-based update for automower
+            if self.auto_mower_rate > 0.0 {
+                self.tick(elapsed.as_secs_f64());
+                should_redraw = true;
+            }
 
             // Wait for user input (non-blocking timeout)
-            if event::poll(Duration::from_millis(500)).unwrap()
-                && let Event::Key(key_event) = event::read().unwrap()
-            {
-                match key_event.code {
-                    KeyCode::Enter => self.mow_manual(),
-                    KeyCode::Char('u') | KeyCode::Char('U') => self.upgrade_mower(),
-                    KeyCode::Char('a') | KeyCode::Char('A') => self.upgrade_auto_mower(),
-                    KeyCode::Char('q') | KeyCode::Char('Q') => {
-                        println!("\nGoodbye! You earned ${:.2}.", self.total_money);
-                        break;
+            if event::poll(Duration::from_millis(500)).unwrap() {
+                if let Event::Key(key_event) = event::read().unwrap() {
+                    match key_event.code {
+                        // Manual mow: update immediately
+                        KeyCode::Enter => {
+                            self.mow_manual();
+                            should_redraw = true;
+                        }
+
+                        // Manual mower upgrade
+                        KeyCode::Char('u') | KeyCode::Char('U') => {
+                            self.upgrade_mower();
+                            should_redraw = true;
+                        }
+
+                        // Auto-mower upgrade
+                        KeyCode::Char('a') | KeyCode::Char('A') => {
+                            self.upgrade_auto_mower();
+                            should_redraw = true;
+                        }
+
+                        // Quit
+                        KeyCode::Char('q') | KeyCode::Char('Q') => {
+                            println!("\nGoodbye! You earned ${:.2}.", self.total_money);
+                            break;
+                        }
+
+                        _ => {}
                     }
-                    _ => {}
                 }
+            }
+
+            // Only re-print the status line if something changed
+            if should_redraw {
+                self.display_status();
             }
         }
     }
